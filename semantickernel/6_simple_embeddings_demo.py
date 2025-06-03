@@ -91,13 +91,20 @@ async def create_embeddings_demo():
         top_results = await semantic_memory.search(
             collection=collection_name,
             query=test_query,
-            limit=1
+            limit=4
         )
         if top_results:
             top_result = top_results[0]
             text_preview = top_result.text[:80] if top_result.text else "No text available"
             print(f"Top match: {text_preview}...")
             print(f"Relevance: {top_result.relevance:.4f}")
+            # Show remaining matches
+            if len(top_results) > 1:
+                print("Other matches:")
+                for i, result in enumerate(top_results[1:], 2):
+                    text_preview = result.text[:80] if result.text else "No text available"
+                    print(f"  {i}. {text_preview}...")
+                    print(f"     Relevance: {result.relevance:.4f}")
 
 async def main():
     print("🌟 Simple Embeddings Demo with Semantic Kernel")
