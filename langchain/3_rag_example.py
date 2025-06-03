@@ -21,7 +21,7 @@ class CookingAssistantRAG:
             self.llm = AzureChatOpenAI(
                 azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
                 azure_deployment=os.environ["AZURE_OPENAI_DEPLOYMENT_NAME"],
-                openai_api_version=os.environ["AZURE_OPENAI_API_VERSION"],
+                api_version=os.environ["AZURE_OPENAI_API_VERSION"],
                 temperature=0.3,  # Slightly creative but consistent
             )
             
@@ -30,7 +30,7 @@ class CookingAssistantRAG:
             self.embeddings = AzureOpenAIEmbeddings(
                 azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
                 model=os.environ["AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME"],
-                openai_api_version=os.environ["AZURE_OPENAI_API_VERSION"],
+                api_version=os.environ["AZURE_OPENAI_API_VERSION"],
             )
             
             # Sample cooking knowledge base

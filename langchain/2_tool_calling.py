@@ -3,7 +3,8 @@ import random
 from dotenv import load_dotenv
 from langchain_openai import AzureChatOpenAI
 from langchain_core.tools import tool
-from langchain_core.messages import HumanMessage
+from langchain.agents import create_tool_calling_agent, AgentExecutor
+from langchain_core.prompts import ChatPromptTemplate
 
 load_dotenv()
 
@@ -30,67 +31,75 @@ def get_weather(location: str) -> str:
             f"{temperature}°C and humidity at {humidity}%.")
 
 def main():
-    """Main function demonstrating tool calling with Azure OpenAI."""
+    """Main function demonstrating automatic tool calling with Azure OpenAI."""
     try:
         # Initialize the LLM with Azure OpenAI
         model = AzureChatOpenAI(
             azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
             azure_deployment=os.environ["AZURE_OPENAI_DEPLOYMENT_NAME"],
-            openai_api_version=os.environ["AZURE_OPENAI_API_VERSION"],
+            api_version=os.environ["AZURE_OPENAI_API_VERSION"],
             temperature=0.1,  # Lower temperature for more consistent responses
         )
         
-        # Bind the tool to the model
-        model_with_tools = model.bind_tools([get_weather])
+        # Create a list of tools
+        tools = [get_weather]
         
-        # Create a message asking about weather
-        messages = [
-            HumanMessage(content="What's the weather like in Sydney, Australia?")
-        ]
+        # Create a prompt template for the agent
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", "You are a helpful assistant that can check weather information. "
+                      "Use the available tools to answer user questions about weather."),
+            ("human", "{input}"),
+            ("placeholder", "{agent_scratchpad}"),
+        ])
         
-        print("User: What's the weather like in Sydney, Australia?")
-        print("Assistant: Let me check the weather for you...")
+        # Create the tool-calling agent
+        agent = create_tool_calling_agent(model, tools, prompt)
         
-        # Get the model's response with tool calls
-        response = model_with_tools.invoke(messages)
+        # Create an agent executor that will automatically handle tool calls
+        agent_executor = AgentExecutor(
+            agent=agent, 
+            tools=tools, 
+            verbose=True,  # Set to True to see the agent's reasoning
+            handle_parsing_errors=True
+        )
         
-        # Check if the model wants to use tools
-        if response.tool_calls:
-            print(f"\nModel is calling tool: {response.tool_calls[0]['name']}")
-            print(f"With arguments: {response.tool_calls[0]['args']}")
-            
-            # Execute the tool call
-            for tool_call in response.tool_calls:
-                if tool_call['name'] == 'get_weather':
-                    location = tool_call['args']['location']
-                    weather_result = get_weather(location)
-                    print(f"\nWeather result: {weather_result}")
-        else:
-            # If no tool calls, just print the response
-            print(f"\nAssistant: {response.content}")
+        print("="*50)
+        print("Example 1: Single city weather")
+        print("="*50)
+        
+        # Example 1: Single city
+        user_input = "What's the weather like in Sydney, Australia?"
+        print(f"User: {user_input}")
+        
+        # The agent executor will automatically:
+        # 1. Determine if tools are needed
+        # 2. Call the appropriate tools
+        # 3. Process the results
+        # 4. Generate a final response
+        result = agent_executor.invoke({"input": user_input})
+        print(f"\nFinal Answer: {result['output']}")
             
         print("\n" + "="*50)
         print("Example 2: Multiple cities")
         print("="*50)
         
-        # Example with multiple cities
-        messages = [
-            HumanMessage(content="Can you check the weather in Tokyo and London?")
-        ]
+        # Example 2: Multiple cities
+        user_input = "Can you check the weather in Tokyo and London?"
+        print(f"User: {user_input}")
         
-        print("User: Can you check the weather in Tokyo and London?")
-        response = model_with_tools.invoke(messages)
+        result = agent_executor.invoke({"input": user_input})
+        print(f"\nFinal Answer: {result['output']}")
         
-        if response.tool_calls:
-            print(f"\nModel is making {len(response.tool_calls)} tool call(s):")
-            
-            for i, tool_call in enumerate(response.tool_calls, 1):
-                if tool_call['name'] == 'get_weather':
-                    location = tool_call['args']['location']
-                    weather_result = get_weather(location)
-                    print(f"{i}. {weather_result}")
-        else:
-            print(f"\nAssistant: {response.content}")
+        print("\n" + "="*50)
+        print("Example 3: No tool needed")
+        print("="*50)
+        
+        # Example 3: Question that doesn't require tools
+        user_input = "What's the capital of France?"
+        print(f"User: {user_input}")
+        
+        result = agent_executor.invoke({"input": user_input})
+        print(f"\nFinal Answer: {result['output']}")
             
     except KeyError as e:
         print(f"Error: Missing environment variable {e}")
