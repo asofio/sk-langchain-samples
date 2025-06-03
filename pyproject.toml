@@ -10,4 +10,5 @@ dependencies = [
     "langchain-openai>=0.3.19",
     "numpy>=2.2.6",
     "pydantic>=2.0.0",
+    "semantic-kernel>=1.32.1",
 ]

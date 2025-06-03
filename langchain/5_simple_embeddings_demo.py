@@ -71,8 +71,9 @@ def create_embeddings_demo():
     
     for test_query in queries:
         print(f"\nQuery: '{test_query}'")
-        top_result = vector_store.similarity_search(test_query, k=1)[0]
-        print(f"Top match: {top_result.page_content[:80]}...")
+        score_with_top = vector_store.similarity_search_with_score(test_query, k=1)[0]
+        print(f"Top match: {score_with_top[0].page_content[:80]}...")
+        print(f"Relevance score: {score_with_top[1]:.4f}")
 
 if __name__ == "__main__":
     print("🌟 Simple Embeddings Demo with LangChain")
