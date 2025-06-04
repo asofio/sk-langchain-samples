@@ -5,6 +5,7 @@ from langgraph.prebuilt import create_react_agent
 from langgraph_supervisor import create_supervisor
 from langgraph.checkpoint.memory import MemorySaver
 from langchain_core.messages import AIMessage
+from langchain_core.runnables import RunnableConfig
 
 load_dotenv()
 
@@ -52,8 +53,7 @@ supervisor = create_supervisor(
         "the recipe generator assistant needs to recreate the recipe with the substitutions. " \
     )
 ).compile(checkpointer=memory)
-
-config = {"configurable": {"thread_id": "1"}}
+config = RunnableConfig(configurable={"thread_id": "1"})
 
 # Global variable to track the last displayed message index for supervisor
 last_supervisor_message_index = -1
