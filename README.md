@@ -1,6 +1,6 @@
 # LangChain and Semantic Kernel Samples
 
-This repository contains a collection of practical examples demonstrating how to build AI-powered applications using both LangChain and Semantic Kernel frameworks. These samples showcase various AI patterns including simple model invocation, tool calling, retrieval-augmented generation (RAG), multi-agent systems, and Model Context Protocol (MCP) integration.
+This repository contains a collection of practical examples demonstrating the usage of both LangChain and Semantic Kernel. These samples showcase various concepts including simple model invocation, tool calling, retrieval-augmented generation (RAG), multi-agent systems, and Model Context Protocol (MCP).
 
 ## What's Included
 
